@@ -25,7 +25,7 @@ export const BudgetProvider = ({ children }: BudgetProviderProps) => {
                 dispatch
             }}
         >
-            {children}
+            {children} {/* Referencia a los elementos hijos */}
         </BudgetContext.Provider>
     )
 }

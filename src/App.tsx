@@ -14,13 +14,13 @@ function App() {
 
   return (
     <>
-      <header className="bg-blue-600 py-8 max-h-72">
+      <header className="bg-emerald-600 py-8 max-h-72">
         <h1 className="uppercase text-center font-black text-4xl text-white">
           Planificador de Gastos
         </h1>
       </header>
 
-      <div className="max-w-3xl mx-auto bg-white shadow-lg mt-10 p-10">
+      <div className="max-w-3xl mx-auto bg-gray-100 shadow-lg mt-10 p-10">
         {isInvalidBudget ? <BudgetTracker /> : <BudgetForm />} {/* Si el presupuesto es inválido, muestra el tracker, si no, muestra el formulario */}
       </div>
 
