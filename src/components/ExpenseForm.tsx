@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { categories } from "../data/categories";
 import type { DraftExpense, Value } from "../types";
 import DatePicker from "react-datepicker";
@@ -16,7 +16,15 @@ export default function ExpenseForm() {
         date: new Date(),
     });
     const [error, setError] = useState('');
-    const { dispatch } = useBudget();
+    const { dispatch, state } = useBudget();
+
+    // Si hay un gasto seleccionado, entonces se actualiza el formulario, tengo que extraer (destructurar) el estado del gasto seleccionado
+    useEffect(() => {
+        if (state.editingId) {
+            const editingExpense = state.expenses.filter(currentExpense => currentExpense.id === state.editingId)[0];
+            setExpense(editingExpense);
+        }
+    }, [state.editingId]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -41,6 +49,26 @@ export default function ExpenseForm() {
         if (Object.values(expense).includes('')) {
             setError("Todos los campos son requeridos");
             return;
+        }
+
+        // Agregar o actualizar el gasto
+        if (state.editingId) {
+            dispatch({
+                type: 'update-expense',
+                payload: { // El payload es el gasto que se va a actualizar (es más complejo por qué tengo que encontrar el id de algún gasto, el state del formulario no tiene el id, lo recuperamos de state.editingId, luego toma una copia ...state y luego le agrego el id)
+                    expense: {
+                        id: state.editingId,
+                        ...expense,
+                    },
+                },
+            });
+        } else {
+            dispatch({
+                type: 'add-expense',
+                payload: {
+                    expense,
+                },
+            });
         }
 
         // Agregar un nuevo gasto
