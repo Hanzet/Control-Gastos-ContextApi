@@ -16,13 +16,15 @@ export default function ExpenseForm() {
         date: new Date(),
     });
     const [error, setError] = useState('');
-    const { dispatch, state } = useBudget();
+    const [previousAmount, setPreviousAmount] = useState(0);
+    const { dispatch, state, remainingBudget } = useBudget();
 
     // Si hay un gasto seleccionado, entonces se actualiza el formulario, tengo que extraer (destructurar) el estado del gasto seleccionado
     useEffect(() => {
         if (state.editingId) {
             const editingExpense = state.expenses.filter(currentExpense => currentExpense.id === state.editingId)[0];
             setExpense(editingExpense);
+            setPreviousAmount(editingExpense.amount); // Guardamos el gasto anterior para poder restarlo al presupuesto
         }
     }, [state.editingId]);
 
@@ -51,6 +53,12 @@ export default function ExpenseForm() {
             return;
         }
 
+        // Validar que el presupuesto no sea negativo (O no me pase del limite de gastos)
+        if ((expense.amount - previousAmount) > remainingBudget) {
+            setError("Ese gasto excede el presupuesto");
+            return;
+        }
+
         // Agregar o actualizar el gasto
         if (state.editingId) {
             dispatch({
@@ -71,14 +79,6 @@ export default function ExpenseForm() {
             });
         }
 
-        // Agregar un nuevo gasto
-        dispatch({
-            type: 'add-expense',
-            payload: {
-                expense,
-            },
-        });
-
         // Reiniciar el formulario (Limpiar el formulario, no necesito una funcion para limpiar el formulario, esto se hace gracias a que existe en los inputs el value, si no existe el value, no se puede limpiar el formulario)
         setExpense({
             expenseName: '',
@@ -86,13 +86,13 @@ export default function ExpenseForm() {
             category: '',
             date: new Date(),
         });
+        setPreviousAmount(0);
     };
 
     return (
         <form className="space-y-5" onSubmit={handleSubmit}>
             <legend className="uppercase text-center text-2xl font-black border-b-4 border-emerald-500 py-2"
-
-            >Nuevo Gasto</legend>
+            >{state.editingId ? 'Editar Gasto' : 'Nuevo Gasto'}</legend> {/* Si state.editingId es true, entonces se muestra 'Editar Gasto', si no, se muestra 'Nuevo Gasto' */}
 
             {error && <ErrorMessage>{error}</ErrorMessage>}
 
@@ -169,7 +169,7 @@ export default function ExpenseForm() {
             <input
                 type="submit"
                 className="bg-emerald-600 cursor-pointer w-full p-2 text-white uppercase font-bold rounded-lg"
-                value={'Registrar Gasto'}
+                value={state.editingId ? 'Editar Gasto' : 'Registrar Gasto'}
             />
         </form>
     )
